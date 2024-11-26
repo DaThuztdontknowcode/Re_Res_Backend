@@ -3,12 +3,20 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const app = express();
+const helmet = require('helmet');
 
 // Sử dụng cổng từ môi trường, nếu không có thì dùng cổng 3000
 const port = process.env.PORT || 3000;
 
 // Sử dụng CORS để cho phép frontend (ReactJS) gọi API từ backend
 app.use(cors());
+
+app.use(helmet.contentSecurityPolicy({
+  directives: {
+    defaultSrc: ["'self'"],
+    mediaSrc: ["'self'", "data:"], // Cho phép tải tài nguyên media từ data URIs
+  },
+}));
 
 // Đọc dữ liệu từ file data.json
 const dataFilePath = path.join(__dirname, 'data.json');
