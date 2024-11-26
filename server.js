@@ -3,7 +3,9 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const app = express();
-const port = 3000;
+
+// Sử dụng cổng từ môi trường, nếu không có thì dùng cổng 3000
+const port = process.env.PORT || 3000;
 
 // Sử dụng CORS để cho phép frontend (ReactJS) gọi API từ backend
 app.use(cors());
@@ -52,5 +54,5 @@ app.get('/search', (req, res) => {
 
 // Khởi động server
 app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+  console.log(`Server is running on port ${port}`);
 });
