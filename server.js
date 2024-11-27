@@ -73,6 +73,11 @@ const app = express();
 // Cấu hình CORS cho phép tất cả các miền
 app.use(cors());
 
+// Endpoint kiểm tra trạng thái
+app.get('/', (req, res) => {
+  res.send('Server is up and running!');
+});
+
 // API tìm kiếm từ khóa
 app.get('/search', (req, res) => {
   const { keyword, restaurant } = req.query;
@@ -83,25 +88,32 @@ app.get('/search', (req, res) => {
 
   // Thực hiện logic tìm kiếm từ file data.json
   const dataFilePath = path.join(__dirname, 'data.json');
-  const rawData = fs.readFileSync(dataFilePath);
-  const data = JSON.parse(rawData);
   
-  const result = Object.keys(data).filter(key => {
-    return !restaurant || key.toLowerCase() === restaurant.toLowerCase();
-  }).reduce((acc, key) => {
-    const matches = data[key].filter(item => item.Word.toLowerCase().includes(keyword.toLowerCase()));
-    if (matches.length > 0) acc[key] = matches;
-    return acc;
-  }, {});
+  try {
+    const rawData = fs.readFileSync(dataFilePath, 'utf8');
+    const data = JSON.parse(rawData);
 
-  if (Object.keys(result).length === 0) {
-    return res.status(404).json({ message: "No matches found" });
+    const result = Object.keys(data).filter(key => {
+      return !restaurant || key.toLowerCase() === restaurant.toLowerCase();
+    }).reduce((acc, key) => {
+      const matches = data[key].filter(item => item.Word.toLowerCase().includes(keyword.toLowerCase()));
+      if (matches.length > 0) acc[key] = matches;
+      return acc;
+    }, {});
+
+    if (Object.keys(result).length === 0) {
+      return res.status(404).json({ message: "No matches found" });
+    }
+
+    res.json(result);
+  } catch (error) {
+    console.error('Error reading data file:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
-
-  res.json(result);
 });
 
 // Khởi động server
-app.listen(3000, () => {
-  console.log('Server running on http://localhost:3000');
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });
